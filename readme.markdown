@@ -1,4 +1,7 @@
+_*This is a fork of https://github.com/bevacqua/dragula with some difference behavior.*_
+
 # Dragula
+
 
 > Drag and drop so simple it hurts
 
@@ -60,12 +63,13 @@ dragula(containers, {
   accepts: function (el, target, source, sibling) {
     return true;         // elements can be dropped in any of the `containers` by default
   },
+  removes: true,
   direction: 'vertical', // Y axis is considered when determining where an element would be dropped
-  copy: false,           // elements are moved by default, not copied
   revertOnSpill: false,  // spilling will put the element back where it was dragged from, if this is true
   removeOnSpill: false   // spilling will `.remove` the element, if this is true
 });
 ```
+_*No `copy` options in this fork. But a `removes` options will be do almost same thing.*_
 
 The options are detailed below.
 
@@ -80,6 +84,7 @@ You can set `accepts` to a method with the following signature: `(el, target, so
 Also note that **the position where a drag starts is always going to be a valid place where to drop the element**, even if `accepts` returned `false` for all cases.
 
 #### `options.copy`
+_*removed in this fork*_
 
 If `copy` is set to `true`, items will be copied rather than moved. This implies the following differences:
 
@@ -89,6 +94,16 @@ Event     | Move                                     | Copy
 `drop`    | Element will be moved into `target`      | Element will be cloned into `target`
 `remove`  | Element will be removed from DOM         | Nothing happens
 `cancel`  | Element will stay in `source`            | Nothing happens
+
+#### `options.removes`
+_*a new option in this fork*_
+
+If `removes` is set to `true`, the original drag item will be removed when drag started, just like set `copy` to `false` in bevacqua's repo.
+Setting `removes` to `false` acts like `copy: true` mode in original repo.
+
+`removes` also accepts a method with the signature: `(item, target, source, reference)`.  If it returns ture, dragula will delete the original item.
+`item` will be the original item, `target` will be the target container and `source` will be the source container, and the `reference` will be the element where
+the item will be insert before.
 
 #### `options.revertOnSpill`
 

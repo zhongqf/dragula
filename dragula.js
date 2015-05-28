@@ -21,9 +21,8 @@ function dragula (initialContainers, options) {
   var o = options || {};
   if (o.moves === void 0) { o.moves = always; }
   if (o.accepts === void 0) { o.accepts = always; }
-  if (o.copy === void 0) { o.copy = false; }
+  if (o.removes === void 0  || !validRemovesArg() ) { o.removes = true; }
   if (o.revertOnSpill === void 0) { o.revertOnSpill = false; }
-  if (o.removeOnSpill === void 0) { o.removeOnSpill = false; }
   if (o.direction === void 0) { o.direction = 'vertical'; }
 
   var api = emitter({
@@ -41,6 +40,11 @@ function dragula (initialContainers, options) {
   api.addContainer(initialContainers);
 
   return api;
+
+  function validRemovesArg() {
+    var type = typeof(o.removes);
+    return type === 'function' || type === 'boolean';
+  }
 
   function manipulateContainers (op) {
     return function addOrRemove (all) {
@@ -116,14 +120,12 @@ function dragula (initialContainers, options) {
     }
 
     end();
+   
+    // copy element at first
+    _copy = item.cloneNode(true);
+    addClass(_copy, 'gu-transit');
+    api.emit('cloned', _copy, item);
 
-    if (o.copy) {
-      _copy = item.cloneNode(true);
-      addClass(_copy, 'gu-transit');
-      api.emit('cloned', _copy, item);
-    } else {
-      addClass(item, 'gu-transit');
-    }
 
     _source = container;
     _item = item;
@@ -157,7 +159,7 @@ function dragula (initialContainers, options) {
     var clientY = getCoord('clientY', e);
     var elementBehindCursor = getElementBehindPoint(_mirror, clientX, clientY);
     var dropTarget = findDropTarget(elementBehindCursor, clientX, clientY);
-    if (dropTarget && (o.copy === false || dropTarget !== _source)) {
+    if (dropTarget)/*-- && (o.copy === false || dropTarget !== _source)) */ {
       drop(item, dropTarget);
     } else if (o.removeOnSpill) {
       remove();
@@ -184,7 +186,7 @@ function dragula (initialContainers, options) {
     if (parent) {
       parent.removeChild(item);
     }
-    api.emit(o.copy ? 'cancel' : 'remove', item, parent);
+    api.emit('remove', item, parent);
     cleanup();
   }
 
@@ -195,13 +197,8 @@ function dragula (initialContainers, options) {
     var reverts = arguments.length > 0 ? revert : o.revertOnSpill;
     var item = _copy || _item;
     var parent = item.parentElement;
-    if (parent === _source && o.copy) {
-      parent.removeChild(_copy);
-    }
     var initial = isInitialPlacement(parent);
-    if (initial === false && o.copy === false && reverts) {
-      _source.insertBefore(item, _initialSibling);
-    }
+    
     if (initial || reverts) {
       api.emit('cancel', item, _source);
     } else {
@@ -214,7 +211,7 @@ function dragula (initialContainers, options) {
     var item = _copy || _item;
     removeMirrorImage();
     rmClass(item, 'gu-transit');
-    rmClass(_currentTarget, "gu-target")
+    rmClass(_currentTarget, 'gu-target');
 
     _source = _item = _copy = _initialSibling = _currentSibling = _currentTarget =  null;
 
@@ -256,6 +253,25 @@ function dragula (initialContainers, options) {
       return o.accepts(_item, target, _source, reference);
     }
   }
+  
+  function removeOriginalItem() {
+    if (!api.dragging) {
+      return;
+    }
+    var item = _item;
+    if (_source && item.parentElement === _source) {
+      _source.removeChild(item);
+      api.emit('remove', item, _source);
+    }
+  }
+
+  function removable(item, target, source, reference) {
+
+    if (typeof(o.removes) === 'function') {
+      return o.removes(item, target, source, reference);
+    }
+    return o.removes;
+  }
 
   function drag (e) {
     if (!_mirror) {
@@ -272,9 +288,7 @@ function dragula (initialContainers, options) {
 
     var elementBehindCursor = getElementBehindPoint(_mirror, clientX, clientY);
     var dropTarget = findDropTarget(elementBehindCursor, clientX, clientY);
-    if (dropTarget === _source && o.copy) {
-      return;
-    }
+
     var reference;
     var item = _copy || _item;
     var immediate = getImmediateChild(dropTarget, elementBehindCursor);
@@ -290,15 +304,23 @@ function dragula (initialContainers, options) {
       _currentSibling = reference;
 
       if (_currentTarget !== dropTarget) {
-        rmClass(_currentTarget, "gu-target");
+        rmClass(_currentTarget, 'gu-target');
         _currentTarget = dropTarget;
-        addClass(_currentTarget, "gu-target");
+        addClass(_currentTarget, 'gu-target');
       }
 
+
       dropTarget.insertBefore(item, reference);
+
+      if (removable(_item, dropTarget, _source, reference)) {
+        removeOriginalItem();
+      }
+
       api.emit('shadow', item, dropTarget);
     }
   }
+
+
 
   function renderMirrorImage () {
     if (_mirror) {
