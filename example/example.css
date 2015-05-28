@@ -147,3 +147,19 @@ button:hover {
   background-color: rgba(0, 0, 0, 0.4);
   cursor: move;
 }
+
+
+#left2.gu-source .gu-origin, #right2.gu-source .gu-origin {
+  display: none;
+}
+#left2.gu-source .gu-origin.toZone, #right2.gu-source .gu-origin.toZone {
+  display: block;
+}
+
+#zone.gu-target {
+  background: #c57;
+}
+
+#zone .gu-transit {
+  display: none;
+}

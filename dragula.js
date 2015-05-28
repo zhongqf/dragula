@@ -117,6 +117,8 @@ function dragula (initialContainers, options) {
 
     end();
 
+    addClass(container, 'gu-source');
+
     if (o.copy) {
       _copy = item.cloneNode(true);
       addClass(_copy, 'gu-transit');
@@ -157,8 +159,9 @@ function dragula (initialContainers, options) {
     var clientY = getCoord('clientY', e);
     var elementBehindCursor = getElementBehindPoint(_mirror, clientX, clientY);
     var dropTarget = findDropTarget(elementBehindCursor, clientX, clientY);
-    if (dropTarget && (o.copy === false || dropTarget !== _source)) {
-      drop(item, dropTarget);
+    //=--if (dropTarget && (o.copy === false || dropTarget !== _source)) {
+    if (dropTarget){
+      drop(item, _item, dropTarget);
     } else if (o.removeOnSpill) {
       remove();
     } else {
@@ -166,11 +169,11 @@ function dragula (initialContainers, options) {
     }
   }
 
-  function drop (item, target) {
-    if (isInitialPlacement(target)) {
-      api.emit('cancel', item, _source);
+  function drop (item, original, target) {
+    if (isInitialPlacement(target) && !o.copy) {
+      api.emit('cancel', item, original, _source);
     } else {
-      api.emit('drop', item, target, _source);
+      api.emit('drop', item, target, original, _source);
     }
     cleanup();
   }
@@ -184,7 +187,7 @@ function dragula (initialContainers, options) {
     if (parent) {
       parent.removeChild(item);
     }
-    api.emit(o.copy ? 'cancel' : 'remove', item, parent);
+    api.emit(o.copy ? 'cancel' : 'remove', item, _item, parent);
     cleanup();
   }
 
@@ -203,9 +206,9 @@ function dragula (initialContainers, options) {
       _source.insertBefore(item, _initialSibling);
     }
     if (initial || reverts) {
-      api.emit('cancel', item, _source);
+      api.emit('cancel', item, _item, _source);
     } else {
-      api.emit('drop', item, parent, _source);
+      api.emit('drop', item, parent, _item, _source);
     }
     cleanup();
   }
@@ -214,7 +217,9 @@ function dragula (initialContainers, options) {
     var item = _copy || _item;
     removeMirrorImage();
     rmClass(item, 'gu-transit');
-    rmClass(_currentTarget, "gu-target")
+    rmClass(_item, 'gu-origin');
+    rmClass(_source, 'gu-source');
+    rmClass(_currentTarget, 'gu-target');
 
     _source = _item = _copy = _initialSibling = _currentSibling = _currentTarget =  null;
 
@@ -272,9 +277,10 @@ function dragula (initialContainers, options) {
 
     var elementBehindCursor = getElementBehindPoint(_mirror, clientX, clientY);
     var dropTarget = findDropTarget(elementBehindCursor, clientX, clientY);
-    if (dropTarget === _source && o.copy) {
-      return;
-    }
+    
+    //=--if (dropTarget === _source && o.copy) {
+    //=--  return;
+    //=--}
     var reference;
     var item = _copy || _item;
     var immediate = getImmediateChild(dropTarget, elementBehindCursor);
@@ -286,17 +292,20 @@ function dragula (initialContainers, options) {
     } else {
       return;
     }
+
+    addClass(_item, 'gu-origin');
+
     if (reference === null || reference !== item && reference !== nextEl(item)) {
       _currentSibling = reference;
 
       if (_currentTarget !== dropTarget) {
-        rmClass(_currentTarget, "gu-target");
+        rmClass(_currentTarget, 'gu-target');
         _currentTarget = dropTarget;
-        addClass(_currentTarget, "gu-target");
+        addClass(_currentTarget, 'gu-target');
       }
 
       dropTarget.insertBefore(item, reference);
-      api.emit('shadow', item, dropTarget);
+      api.emit('shadow', item, dropTarget, _item, _source);
     }
   }
 
@@ -312,6 +321,8 @@ function dragula (initialContainers, options) {
     addClass(_mirror, ' gu-mirror');
     body.appendChild(_mirror);
     touchy(documentElement, 'add', 'mousemove', drag);
+
+
     addClass(body, 'gu-unselectable');
     api.emit('cloned', _mirror, _item);
   }
