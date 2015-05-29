@@ -22,6 +22,9 @@ function dragula (initialContainers, options) {
   if (o.moves === void 0) { o.moves = always; }
   if (o.accepts === void 0) { o.accepts = always; }
   if (o.copy === void 0) { o.copy = false; }
+  if (o.allowLink === void 0) { o.allowLink = false; }
+  if (o.allowButton === void 0) { o.allowButton = false; }
+
   if (o.revertOnSpill === void 0) { o.revertOnSpill = false; }
   if (o.removeOnSpill === void 0) { o.removeOnSpill = false; }
   if (o.direction === void 0) { o.direction = 'vertical'; }
@@ -138,7 +141,7 @@ function dragula (initialContainers, options) {
   }
 
   function invalidTarget (el) {
-    return el.tagName === 'A' || el.tagName === 'BUTTON';
+    return (!o.allowLink && el.tagName === 'A') || (!o.allowButton && el.tagName === 'BUTTON');
   }
 
   function end () {
