@@ -305,7 +305,7 @@ function dragula (initialContainers, options) {
       }
 
       dropTarget.insertBefore(item, reference);
-      api.emit('shadow', item, dropTarget, _item, _source);
+      api.emit('shadow', item, dropTarget, _item, _source, elementBehindCursor);
     }
   }
 

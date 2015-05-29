@@ -148,15 +148,15 @@ If an element managed by `drake` is currently being dragged, this method will gr
 
 The `drake` is an event emitter. The following events can be tracked using `drake.on(type, listener)`:
 
-Event Name | Listener Arguments                    | Event Description
------------|---------------------------------------|-------------------------------------------------------------------------------------
-`drag`     | `el, container`                       | `el` was lifted from `container`
-`dragend`  | `el`                                  | Dragging event for `el` ended with either `cancel`, `remove`, or `drop`
-`drop`     | `el, container`, **origin**, `source` | `el` was dropped into `container`, and originally came from `source`
-`cancel`   | `el`, **origin**, `container`         | `el` was being dragged but it got nowhere and went back into `container`, its last stable parent
-`remove`   | `el`, **origin**, `container`         | `el` was being dragged but it got nowhere and it was removed from the DOM. Its last stable parent was `container`.
-`shadow`   | `el, container`, **origin, source**   | `el`, _the visual aid shadow_, was moved into `container`. May trigger many times as the position of `el` changes, even within the same `container`
-`cloned`   | `clone, original`                     | DOM element `original` was cloned as `clone`. Triggers for mirror images and when `copy: true`
+Event Name | Listener Arguments                               | Event Description
+-----------|--------------------------------------------------|-------------------------------------------------------------------------------------
+`drag`     | `el, container`                                  | `el` was lifted from `container`
+`dragend`  | `el`                                             | Dragging event for `el` ended with either `cancel`, `remove`, or `drop`
+`drop`     | `el, container`, **origin**, `source`            | `el` was dropped into `container`, and originally came from `source`
+`cancel`   | `el`, **origin**, `container`                    | `el` was being dragged but it got nowhere and went back into `container`, its last stable parent
+`remove`   | `el`, **origin**, `container`                    | `el` was being dragged but it got nowhere and it was removed from the DOM. Its last stable parent was `container`.
+`shadow`   | `el, container`, **origin, source, rawObject**   | `el`, _the visual aid shadow_, was moved into `container`. May trigger many times as the position of `el` changes, even within the same `container`, _`origin` is the origin item, `source` is the source container, and `rawObject` is the object that curson on._
+`cloned`   | `clone, original`                                | DOM element `original` was cloned as `clone`. Triggers for mirror images and when `copy: true`
 
 #### `drake.destroy()`
 
